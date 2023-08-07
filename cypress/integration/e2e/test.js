@@ -60,29 +60,50 @@ describe('Automated test', () => {
         const arabicCities = ['دبي','جدة']
         let englishRandomIndex = Math.floor(Math.random() * englishCities.length)
         let arabicRandomIndex = Math.floor(Math.random() * arabicCities.length)
+        const rooms = ['A','B']
+        let randomRoomsIndex = Math.floor(Math.random() * rooms.length)
         cy.url().then((url) => {
             if (url.includes('/en')) {
+                //check if the visited language is correct
                 cy.get('[data-testid="Header__LanguageSwitch"]').should('contain', 'العربية')
+                //Go to hotels tab and enter random city then select the 1st option
                 cy.get('#uncontrolled-tab-example-tab-hotels').click()
                 cy.get('input[data-testid="AutoCompleteInput"]').type(englishCities[englishRandomIndex])
                 cy.get('[data-testid="AutoCompleteResultItem0"] > .sc-12clos8-5').click()
+                //Select random room option
+                cy.get('select[data-testid="HotelSearchBox__ReservationSelect_Select"]').select(rooms[randomRoomsIndex])
+                //Click search
+                cy.get('button[data-testid="HotelSearchBox__SearchButton"]').click()
+                //wait for loading search results and make assertion
+                cy.get('[data-testid="HotelSearchResult__resultsFoundCount"]',{ timeout: 60000 }).should('exist').should('be.visible').should('contain','properties found')
+
             } else if (url.includes('/ar')) {
+                //check if the visited language is correct
                 cy.get('[data-testid="Header__LanguageSwitch"]').should('contain', 'English')
+                //Go to hotels tab and enter random city then select the 1st option
                 cy.get('#uncontrolled-tab-example-tab-hotels').click()
                 cy.get('input[data-testid="AutoCompleteInput"]').type(arabicCities[arabicRandomIndex])
                 cy.get('[data-testid="AutoCompleteResultItem0"] > .sc-12clos8-5').click()
+                //Select random room option
+                cy.get('select[data-testid="HotelSearchBox__ReservationSelect_Select"]').select(rooms[randomRoomsIndex])
+                //Click search
+                cy.get('button[data-testid="HotelSearchBox__SearchButton"]').click()
+                //wait for loading search results and make assertion
+                cy.get('[data-testid="HotelSearchResult__resultsFoundCount"]', { timeout: 60000 }).should('exist').should('be.visible').should('contain', "وجدنا");
+
             }
         })
-
+        //Sort results lowest to highest price and make assertion
+        cy.get('button[data-testid="HotelSearchResult__sort__LOWEST_PRICE"]').click()
+        let prices = []
+        cy.get('[data-testid="HotelSearchResult__ResultsList"]').find('.Price__Value').each(
+            (element) => {
+                prices.push(parseInt(element.text(),10))
+            }
+        )
+        for (let i = 0; i < prices.length - 1; i++) {
+            expect(prices[i]).to.be.lessThan(prices[i + 1])
+        }
     });
 
-    it('', () => {
-       
-    });
-
-    it('', () => {
-        cy.visit('https://www.almosafer.com/en')
-    
-        cy.get('.sc-dDojKJ').find('price__value')
-    });
 });
